@@ -1,0 +1,43 @@
+version: '3.9'
+
+services:
+  nginx:
+    image: nginx:latest
+    container_name: nginx
+    restart: always
+    ports:
+      - 80:80
+      - 443:443
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/nginx.conf
+      - ./nginx/proxy.conf:/etc/nginx/proxy.conf
+      - ./nginx/mime.types:/etc/nginx/conf/mime.types
+      - ./nginx/fastcgi.conf:/etc/nginx/fastcgi.conf
+      - ./nginx/conf.d:/etc/nginx/conf.d
+      - ./nginx/includes:/etc/nginx/includes
+      - ./certs:/etc/nginx/certs
+      - ./logs:/var/log/nginx
+      - ../projects:/var/www/html
+    links:
+      - php82
+    networks:
+      - public
+  php82:
+    build:
+      context: ./php82
+      dockerfile: Dockerfile
+    container_name: php82
+    environment:
+      - "ENV_SUBSTITUTION_ENABLE=true"
+      - "PHP_MEMORY_LIMIT=512M"
+      - "PHP_FPM_LISTEN=9000"
+      - "PHP_SESSION_GC_MAXLIFETIME=7200"
+    ports:
+      - "9000:9000"
+    volumes:
+      - ../projects:/var/www/html
+    networks:
+      - public
+
+networks:
+  public:
